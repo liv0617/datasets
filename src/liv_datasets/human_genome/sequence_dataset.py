@@ -9,9 +9,9 @@ logger = getLogger(__name__)
 class SequenceDataset(Dataset):
 
     def __init__(self, data_path, shuffle=False) -> None:
-        self._data = open(data_path, 'w+')
-        self.length = self._get_length()
+        self._data = open(data_path, 'r')
         self._data_path = data_path
+        self.length = self._get_length()
         if shuffle:
             self._shuffle()
 
@@ -35,11 +35,11 @@ class SequenceDataset(Dataset):
         logger.info(f'Shuffled all {total_shards} shards in shard_tmp/')
         
         # close the unshuffled shard files
-        for shard_file in tqdm(shard_files.values(), desc=f'Shuffling shards...'):
+        for shard_file in tqdm(shard_files.values(), desc="Shuffling shards..."):
             shard_file.close()
 
         # concatenate shuffled files
-        new_data_path = f'{self._data_path.split('.')[0]}_shuffled.txt'
+        new_data_path = f"{self._data_path.split('.')[0]}_shuffled.txt"
         data = open(new_data_path, 'w+')
         for shard_file in tqdm(shard_files_shuffled.values(), desc=f'Concatenating shards to {new_data_path}...'):
             data.writelines(shard_file.readlines())
@@ -90,6 +90,7 @@ class SequenceDataset(Dataset):
                 line_count += 1
                 pbar.update(1)
                 line = self._data.readline()
+            self.reset() # reset to start of file
             return line_count
 
     def __len__(self) -> int:
